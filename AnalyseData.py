@@ -1,4 +1,5 @@
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 import pandas as pd
@@ -10,40 +11,40 @@ seq_path='../mheinzinger/deepppi1tb/contact_prediction/contact_prediction_v2/seq
 
 def readResidues(protein):
     path=seq_path+'/'+protein.upper()+'.fasta.txt'
-    if(os.path.isfile(path)): 
-    	residues_input = np.loadtxt(path, dtype=str)
-    	residues=''
-    	for i in range(len(residues_input)):
+    if(os.path.isfile(path)):
+        residues_input = np.loadtxt(path, dtype=str)
+        residues=''
+        for i in range(len(residues_input)):
             if(i>0):
-            	if(residues_input[i][0]=='>'):
-                	break
-            	residues += residues_input[i]
+                if(residues_input[i][0]=='>'):
+                    break
+                residues += residues_input[i]
 
-    	return residues
+        return residues
     else:
-	print('no residue')
+        print('no residue')
 
 def readStructures3(protein):
     path= proteins_path+'/'+protein+'/'+protein+'.3.consensus.dssp'
-    if(os.path.isfile(path)): 
+    if(os.path.isfile(path)):
         structures_input = np.loadtxt(path, dtype=str)
         structures=''
         for i in range(len(structures_input)):
-	    if(i>0):
-	        structures += structures_input[i]
-	return structures
+            if(i>0):
+                structures += structures_input[i]
+        return structures
     else:
         print('no 3 file of', protein)
 
 def readStructures8(protein):
     path = proteins_path+'/'+protein+'/'+protein+'.8.consensus.dssp'
-    if(os.path.isfile(path)): 
+    if(os.path.isfile(path)):
         structures_input = np.loadtxt(path, dtype=str)
-	structures = ''
+        structures = ''
         for i in range(len(structures_input)):
-       	    if (i > 0):
-		structures += structures_input[i]
-	return structures
+            if (i > 0):
+                structures += structures_input[i]
+        return structures
     else:
         print('no 8 file of ', protein)
 
@@ -60,7 +61,7 @@ def getInput(folder, classification_mode): #proteins in a folder named root+prot
             str=readStructures8(prot)
         else:
             raise ValueError('[ERROR] Either 3 or 8 classes')
-	if(str!=None and res!=None):
+        if(str!=None and res!=None):
             tmp = {prot: (res, str)}
             dict.update(tmp)
     return dict, lengths
@@ -121,8 +122,8 @@ def countStructures8(sequence):
             xy += 1
         else:
             #raise ValueError('Unknown structure', sequence[i])
-	    print('unknown found:', sequence[i])
-	    return 0,0,0,0,0,0,0,0,0
+            print('unknown found:', sequence[i])
+            return 0,0,0,0,0,0,0,0,0
     return h,e,g,t,s,b,none, xy,ii
 
 def countStructureChains3(sequence):
@@ -231,7 +232,7 @@ def countStructureChains8(sequence):
         counts['B'][i] = np.bincount(B)[i]
 
     # plot8combined(counts)
-    return counts, H,E,I,S,T,B,G,none
+    return counts, H,E,I,S,T,G,B,none
 
 def countStructureChains3_dict(dict):
     C=[]
@@ -252,6 +253,7 @@ def countStructureChains3_dict(dict):
         H.extend(H_tmp)
         counts_all = counts_all.append(counts_tmp)
     f.close()
+    plot3(counts_all, [np.average(C), np.average(H), np.average(E)])
     return (counts_all.groupby(counts_all.index).sum()), np.average(C), np.average(H), np.average(E)
 
 def countStructureChains8_dict(dict):
@@ -268,7 +270,7 @@ def countStructureChains8_dict(dict):
                               index=[range(0)])
     f = open('structureChains8.txt', 'w')
     for i in range(len(dict)):
-        counts_tmp, H_tmp, E_tmp, I_tmp, S_tmp, T_tmp, B_tmp, G_tmp, none_tmp = countStructureChains8(dict[dict.keys()[i]][1])
+        counts_tmp, H_tmp, E_tmp, I_tmp, S_tmp, T_tmp, G_tmp, B_tmp, none_tmp = countStructureChains8(dict[dict.keys()[i]][1])
         f.write(dict.keys()[i])
         f.write(counts_tmp.to_string())
         f.write(' ')
@@ -282,43 +284,70 @@ def countStructureChains8_dict(dict):
         none.extend(none_tmp)
         counts_all = counts_all.append(counts_tmp)
     f.close()
-    return (counts_all.groupby(counts_all.index).sum()), np.average(H), np.average(E), np.average(I), np.average(S), np.average(T), np.average(B), np.average(G), np.average(none)
+    #plot8(counts_all, [np.average(H), np.average(E),np.average(I),np.average(S),np.average(T),np.average(G),np.average(B),np.average(none)])
+    return (counts_all.groupby(counts_all.index).sum()), np.average(H), np.average(E), np.average(I), np.average(S), np.average(T), np.average(G), np.average(B), np.average(none)
 
 def plot3(counts, avgs):
-    plt.figure()
-    plt.suptitle('Occurences of chain lengths')
-    plt.title(r'Number of how long the structure chains are')
-    plt.ylabel('Occurences')
-    cols = ['green', 'cyan', 'orange', 'blue', 'red', 'yellow', 'pink', 'brown']
 
+    print('in plot3')
+    cols = ['green', 'cyan', 'orange', 'blue', 'red', 'yellow', 'pink', 'brown']
+    '''
     for i in range(counts.shape[1]):
         tmp = counts.keys()[i]
-        plt.subplot(1, counts.shape[1], i + 1)
+        print('plotting', tmp)
+        plt.figure()
+        plt.suptitle('Occurences of chain lengths of '+tmp)
+        #plt.title('Number of how long the structure chains are')
+
+        plt.ylabel('Occurences')
         plt.axvline(avgs[i], color='grey', linestyle='dashed',
                     linewidth=1)
-        plt.xlabel('Chain length ' + tmp + ' \n(max:' + str(np.max(counts[tmp])) + ' min:' + str(
-            np.min(counts[tmp])) + ' total:' + str(np.sum(counts[tmp])) + ')')
-        plt.ylim([0, np.max(counts.values)])
-        plt.bar(range(counts.shape[0]), counts[tmp], label='C', color=cols[i])
+        plt.xlabel('Chain length ' + tmp + ' \n(avg:' + str(avgs[i])+')' )
+        plt.ylim([0, np.max(counts[tmp].values) + 500])
+        plt.xlim([0, 50])
+        plt.bar(range(counts.shape[0]), counts[tmp], label='C', color=cols[i],align='center')
 
-    plt.savefig('countChains3_each.pdf')
+        plt.savefig('countChains3_'+tmp+'.pdf')
+    print('plotted 3')
+    '''
+    #plotting all in one
+    plt.figure()
+    plt.suptitle('Occurences of chain lengths of each DSSP state')
+    plt.ylabel('Occurences')
+    for i in range(counts.shape[1]):
+        plt.subplot(1,3,i+1)
+        tmp = counts.keys()[i]
+
+        plt.axvline(avgs[i], color='grey', linestyle='dashed',
+                    linewidth=1)
+        plt.xlabel('Chain length ' + tmp + ' \n(avg:' + str(round(avgs[i],2)) + ')')
+        plt.ylim([0, 13500])
+        plt.xlim([0, 50])
+        plt.bar(range(counts.shape[0]), counts[tmp], label='C', color=cols[i], align='center')
+
+    plt.savefig('countChains3_together.pdf')
+
 
 def plot8(counts, avgs):
-    plt.figure()
-    plt.suptitle('Occurences of chain lengths')
-    plt.title(r'Number of how long the structure chains are')
-    plt.ylabel('Occurences')
+    print('in plot8')
     cols = ['green', 'cyan', 'orange', 'blue', 'red', 'yellow', 'pink', 'brown', 'black']
 
     for i in range(counts.shape[1]):
         tmp = counts.keys()[i]
-        plt.subplot(1, counts.shape[1], i+1)
+        plt.figure()
+        plt.suptitle('Occurences of chain lengths '+tmp)
+        #plt.title(r'Number of how long the structure chains are')
+        plt.ylabel('Occurences')
+        plt.xlabel('Lengths')
         plt.axvline(avgs[i], color='grey', linestyle='dashed', linewidth=1)
-        plt.xlabel('Chain length '+tmp+' \n(max:'+str(np.max(counts[tmp]))+' min:'+str(np.min(counts[tmp]))+' total:'+str(np.sum(counts[tmp]))+')')
-        plt.ylim([0, np.max(counts.values)])
-        plt.bar(range(counts.shape[0]),counts[tmp],  label='C', color=cols[i])
+        plt.xlabel('Chain length ' + tmp + ' \n(avg:' + str(round(avgs[i],2)) + ')')
+        plt.ylim([0, np.max(counts[tmp].values) + 500])
+        plt.xlim([0,50])
+        plt.bar(range(counts.shape[0]),counts[tmp],  label='C', color=cols[i],align='center')
 
-        plt.savefig('countChains8_each.pdf')
+        plt.savefig('countChains8_'+tmp+'.pdf')
+        print('plotted8')
+
 
 def countAminoAcidsPerStruct3(seq, struct):
     matrix = np.zeros((4, 21), dtype=int)
@@ -440,7 +469,7 @@ def countDistanceBetweenBetaSheets(sequence):
     i=0
     tmp=0
     while i<len(sequence):
-        if(sequence[i]=='B' or sequence[i]=='E'):
+        if((sequence[i]=='B' or sequence[i]=='E') and tmp>0):
             dist.append(tmp)
             tmp=0
         else:
@@ -448,24 +477,45 @@ def countDistanceBetweenBetaSheets(sequence):
         i+=1
     if(len(dist)>0):
         del dist[0]
+
+    #print('beta dist:', dist)
     return dist
 
 def countDistanceBetweenBetaSheets_dict(dict):
     dist=[]
     for i in range(len(dict)):
         seq=dict[dict.keys()[i]][1]
-        print(seq)
         dist_tmp=countDistanceBetweenBetaSheets(seq)
         dist=dist+dist_tmp
+    return np.average(dist)
 
-    return dist
+def piechart3(C,H,E, xy):
+    plt.figure()
+    plt.pie([C, H, E, xy], labels=['C', 'H', 'E', 'X or Y'], autopct='%1.1f%%',colors=['gold', 'yellowgreen', 'lightcoral', 'grey'], shadow=False, startangle=90, explode=[0,0,0,0.1])
+    plt.savefig('piechart_3classes.pdf')
+
+def piechart8(H,E,none, xy,T,S,G,B,I):
+    plt.figure()
+    plt.pie([S,T,none,H,G,I,E,B,xy], labels=['S', 'T','-', 'H','G','I','E','B','X or Y'], autopct='%1.1f%%',pctdistance=1.3,colors=['gold', 'orange', 'yellow', 'yellowgreen','palegreen', 'forestgreen','lightcoral','firebrick','grey'], shadow=False, explode=[0,0,0,0,0,0,0,0,0.1],startangle=90)
+    plt.savefig('piechart_8classes.pdf')
+
+def plotLengths(lengths):
+    plt.figure()
+    plt.hist(lengths, color='orange', alpha=0.5, rwidth=0.5)
+    plt.axis([0, np.max(lengths)+100, 0, 1500])
+    plt.title('Sequence lengths in dataset')
+    plt.xlabel('Average length: '+str(int(np.average(lengths)))+'   Max length: '+str(int(np.max(lengths))))
+    plt.savefig('sequencelengths.pdf')
 
 ## SCRIPT ##
 def analyseData():
     f = open('results.txt', 'w')
 
     dict, lengths = getInput(proteins_path, 3)
+    '''
+    plotLengths(lengths)
     print('dict one read!', len(dict), ', average sequence length: ',np.average(lengths))
+    
     c = 0
     h = 0
     e = 0
@@ -476,11 +526,15 @@ def analyseData():
         e += tmp_e
         h += tmp_h
         xy += tmp_xy
+    piechart3(c,h,e,xy)
+    
     f.write('Average sequence length: ')
-    f.write(np.average(lengths))
+    f.write(str(np.average(lengths)))
     f.write('Classification of targets (3 classes)\n')
     f.write(str('C: ' + str(c) + ' , H: ' + str(h) + ' , E: ' + str(e) + ' ,XY: ' + str(xy) + '\n'))
+    '''
     chains, C_avg, H_avg, E_avg = countStructureChains3_dict(dict)
+    plot3(chains, [C_avg, H_avg, E_avg])
     f.write('Counting structure chains (3 classes)\n')
     f.write(chains.to_string())
     f.write('\n')
@@ -488,19 +542,21 @@ def analyseData():
     f.write(str('Average H length: ' + str(H_avg) + '\n'))
     f.write(str('Average E length: ' + str(E_avg) + '\n'))
     f.write('\n')
+    '''
     aa=countAminoAcidsPerStruct_dict(dict,3)
     f.write('Counts of AAs per structure class 0=C, 1=H, 2=E, 3=XY\n')
     f.write(aa.to_string())
     f.write('\n')
-    beta = countDistanceBetweenBetaSheets_dict(dict)
-    avg_beta=sum(beta)/float(len(beta))
+    avg_beta = countDistanceBetweenBetaSheets_dict(dict)
+    print('average distance beta',avg_beta)
     f.write('Average distance between beta-sheets:')
     f.write(str(avg_beta))
     f.write('\n')
+    '''
 
-
-    dict = getInput(proteins_path, 8)
+    dict, lengths = getInput(proteins_path, 8)
     print('dict two read!', len(dict))
+    '''
     h = 0
     e = 0
     xy = 0
@@ -510,6 +566,7 @@ def analyseData():
     s = 0
     ii = 0
     none = 0
+    
     for i in range(len(dict)):
         tmp_h, tmp_e, tmp_g, tmp_t, tmp_s, tmp_b, tmp_none, tmp_xy, tmp_ii = countStructures8(
             dict[dict.keys()[i]][1])
@@ -523,15 +580,20 @@ def analyseData():
         g += tmp_g
         xy += tmp_xy
 
+    piechart8(h,e,none,xy,t,s,g,b,ii)
     f.write('\n')
     f.write('\n')
     f.write('\n')
+
     f.write('classification of targets (8 classes)\n')
     f.write(str( 'I: ' + str(ii) + ' , H: ' + str(h) + ' , E: ' + str(e) + ' T: ' + str(t) + ' G: ' + str(g) + 'B: ' + str(b) + ' S: ' + str(s) + ' -: ' + str(none) + ' ,XY: ' + str(xy) + '\n'))
+    
     chains,  H_avg, E_avg, I_avg, S_avg, T_avg, B_avg, G_avg, none_avg = countStructureChains8_dict(dict)
+    plot8(chains,  [H_avg, E_avg, I_avg, S_avg, T_avg, B_avg, G_avg, none_avg])
     f.write('Counting structure chains (8 classes)\n')
     f.write(chains.to_string())
     f.write('\n')
+    
     f.write(str('Average H length: ' + str(H_avg) + '\n'))
     f.write(str('Average E length: ' + str(E_avg) + '\n'))
     f.write(str('Average I length: ' + str(I_avg) + '\n'))
@@ -540,15 +602,17 @@ def analyseData():
     f.write(str('Average B length: ' + str(B_avg) + '\n'))
     f.write(str('Average G length: ' + str(G_avg) + '\n'))
     f.write(str('Average none length: ' + str(none_avg) + '\n'))
+
     aa = countAminoAcidsPerStruct_dict(dict, 8)
     f.write('Counts of AAs per structure class 0=H, 1=E, 2=I, 3=S, 4=T, 5=G, 6=B, 7=-, 8=XY\n')
     f.write(aa.to_string())
     f.write('\n')
-    beta = countDistanceBetweenBetaSheets_dict(dict)
-    avg_beta = sum(beta) / float(len(beta))
-    f.write('Average distance between beta-sheets:')
+
+    avg_beta = countDistanceBetweenBetaSheets_dict(dict)
+    print('average beta dist: ',avg_beta)
     f.write(str(avg_beta))
     f.write('\n')
+    '''
     f.close()
 
 analyseData()

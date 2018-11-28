@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+
+\bibitem{pdb}
+H.~M. Berman, J.~Westbrook, Z.~Feng, G.~Gilliland, T.~N. Bhat, H.~Weissig,
+  I.~N. Shindyalov, and P.~E. Bourne, ``The protein data bank,'' {\em Nucleic
+  acids research}, vol.~28, no.~1, pp.~235--242, 2000.
+\newblock [Online available at \url{www.rcsb.org}; accessed 23 Oct 2018].
+
+\bibitem{protvec}
+E.~Asgari and M.~R. Mofrad, ``Protvec: A continuous distributed representation
+  of biological sequences for deep proteomics and genomics,'' {\em PLoS ONE},
+  vol.~10, no.~11, 2015.
+
+\end{thebibliography}

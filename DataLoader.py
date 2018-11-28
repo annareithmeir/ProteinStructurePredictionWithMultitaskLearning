@@ -42,9 +42,10 @@ def countStructures3(train, test):
     print('occurences test:', ctest, htest, etest, xytest, '-->', testsum)
 
 class Data_splitter():
-    def __init__(self, inputs, targets, test_ratio=0.2):  # 80% train, 20% test
+    def __init__(self, inputs, targets, masks, test_ratio=0.2):  # 80% train, 20% test
         self.inputs = inputs
         self.targets = targets
+        self.masks=masks
         self.test_ratio = test_ratio
         self.max_len = 0
 
@@ -60,10 +61,10 @@ class Data_splitter():
             if (len(self.targets[i]) > self.max_len):
                 self.max_len = len(self.targets[i])
             if (rnd > (1 - self.test_ratio)):
-                test[cnt_test] = (self.inputs[i], self.targets[i])
+                test[cnt_test] = [self.inputs[i], self.targets[i], self.masks[i]]
                 cnt_test += 1
             else:
-                train[cnt_train] = (self.inputs[i], self.targets[i])
+                train[cnt_train] = [self.inputs[i], self.targets[i], self.masks[i]]
                 cnt_train += 1
 
         print('Size of training set: {}'.format(len(train)))
@@ -75,23 +76,24 @@ class Data_splitter():
         return self.max_len
 
 class Dataset(data.Dataset):
-    # LEN_FEATURE_VEC = 1
 
-    def __init__(self, samples, max_len=None):
+    def __init__(self, samples, weights, max_len=None):
         self.max_len = max_len
-        self.inputs, self.targets = zip(*[(inputs, targets)
-                                          for _, (inputs, targets) in samples.items()])
+        self.inputs, self.targets, self.masks = zip(*[[inputs, targets, masks]
+                                          for _, [inputs, targets, masks] in samples.items()])
         self.data_len = len(self.inputs)
         self.to_tensor = transforms.ToTensor()
+        self.weights=weights
 
     def __getitem__(self, idx):
         X = self.inputs[idx]
         # print('X.shape in getitem(): ', X.shape)
         Y = self.targets[idx]
         # print('Y.shape in getitem(): ', len(Y))
-        mask_idx = np.where(np.array(Y) == 4)
-        mask = np.ones(len(X))
-        mask[mask_idx] = 0
+        mask=self.masks[idx]
+        #mask_idx = np.where(np.array(Y) == 4)
+        #mask = np.ones(len(X))
+        #mask[mask_idx] = 0
         # print('Y:', Y)
         # print('mask.shape in getitem(): ', mask.shape)
 
@@ -114,34 +116,39 @@ class Dataset(data.Dataset):
         # print('Yt_expanded.shape in getitem(): ', Y.shape)
 
         input_tensor = torch.from_numpy(X).type(dtype=torch.float)
-        # print('inputtensor:', input_tensor.size())
+        #print('inputtensor:', input_tensor.size(), input_tensor)
         output_tensor = torch.from_numpy(Y)
-        # print('outputtensor:', output_tensor.size())
+        #print('outputtensor:', output_tensor.size(), output_tensor)
         mask_tensor = torch.from_numpy(mask).type(dtype=torch.float)
-        # print('masktensor', mask_tensor.size())
-        return (input_tensor, output_tensor, mask_tensor)
+        #print('masktensor', mask_tensor.size(), mask_tensor)
+
+        weighted_mask=torch.Tensor(np.array([self.weights[i] for i in output_tensor]))*mask_tensor
+        #print('weighted:', weighted_mask)
+        assert weighted_mask.size()==mask_tensor.size()
+
+        return (input_tensor, output_tensor, weighted_mask)
 
     def __len__(self):
         return self.data_len
 
-def train_test_split(inputs, targets):
-    d = Data_splitter(inputs, targets)
+def train_test_split(inputs, targets, masks, weights):
+    d = Data_splitter(inputs, targets, masks)
     train, test = d.split_data()
     max_len = d.get_max_length()
-    train_set = Dataset(train, max_len)
-    test_set = Dataset(test, max_len)
+    train_set = Dataset(train, weights,max_len)
+    test_set = Dataset(test,weights, max_len)
 
     return train_set, test_set
 
-def createDataLoaders(train_set, test_set):
+def createDataLoaders(train_set, test_set, batch_size_train, batch_size_test):
     data_loaders = dict()
     data_loaders['Train'] = torch.utils.data.DataLoader(dataset=train_set,
-                                                        batch_size=32,
+                                                        batch_size=batch_size_train,
                                                         shuffle=True,
                                                         drop_last=False
                                                         )
     data_loaders['Test'] = torch.utils.data.DataLoader(dataset=test_set,
-                                                       batch_size=100,
+                                                       batch_size=batch_size_test,
                                                        shuffle=False,
                                                        drop_last=False
                                                        )

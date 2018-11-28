@@ -67,7 +67,7 @@ def getInput(folder, classification_mode): #proteins in a folder named root+prot
             dict.update(tmp)
     return dict, lengths
 
-def countStructures3(dict):
+def countStructures3(dict, f):
     c = 0
     h = 0
     e = 0
@@ -86,10 +86,16 @@ def countStructures3(dict):
             else:
                 raise ValueError('Unknown structure', sequence[i])
 
+    f.write('\n')
+    f.write('###   DSSP3 Classes   ###\n')
+    f.write(str('(C, H, E, XY): '+str(c)+' '+str(h)+' '+str(e)+' '+str(xy)+'\n'))
+    f.write('\n')
     counts=np.array([c,h,e,xy])
     np.save(statistics_dir+'/countClasses_3',counts)
+    tmp={'proportions3':counts}
+    attributes.update(tmp)
 
-def countStructures8(dict):
+def countStructures8(dict, f):
     h = 0
     e = 0
     t = 0
@@ -123,10 +129,17 @@ def countStructures8(dict):
             else:
                 print('unknown found:', sequence[i])
                 return 0,0,0,0,0,0,0,0,0
+
+    f.write('\n')
+    f.write('###   DSSP8 Classes   ###\n')
+    f.write('(H, E, I, S, T, G, B, -, XY): '+str(h)+' '+str(e)+' '+str(i)+' '+str(s)+' '+str(t)+' '+str(g)+' '+str(b)+' '+str(none)+' '+str(xy)+'\n')
+    f.write('\n')
     counts=np.array([h,e,ii,s,t,g,b,none,xy])
     np.save(statistics_dir + '/countClasses_8', counts)
+    tmp={'proportions8':counts}
+    attributes.update(tmp)
 
-def countStructureChains3_dict(dict):
+def countStructureChains3_dict(dict, f):
     def countStructureChains3(sequence):
         C = []
         H = []
@@ -154,7 +167,7 @@ def countStructureChains3_dict(dict):
         matrix = np.zeros((max(len(np.bincount(C)), len(np.bincount(H)), len(np.bincount(E))), 3), dtype=int)
         counts = pd.DataFrame(matrix,
                               columns=['C', 'H', 'E'],
-                              index=[range(max(len(np.bincount(C)), len(np.bincount(H)), len(np.bincount(E))))])
+                              index=[np.arange(max(len(np.bincount(C)), len(np.bincount(H)), len(np.bincount(E))))])
 
         for i in range(len(np.bincount(C))):
             counts['C'][i] = np.bincount(C)[i]
@@ -163,15 +176,14 @@ def countStructureChains3_dict(dict):
         for i in range(len(np.bincount(E))):
             counts['E'][i] = np.bincount(E)[i]
 
-        # plot3combined(counts)
         return counts, C, H, E
 
     C=[]
     H=[]
     E=[]
-    counts_all = pd.DataFrame(np.zeros((0, 3), dtype=int),
+    counts_all = pd.DataFrame(np.zeros((1, 3), dtype=int),
                               columns=['C', 'H', 'E'],
-                              index=[range(0)])
+                              index=[np.arange(1)])
 
     for sample in dict.keys():
         counts_tmp, C_tmp,H_tmp,E_tmp = countStructureChains3(dict[sample][1])
@@ -181,11 +193,16 @@ def countStructureChains3_dict(dict):
         counts_all = counts_all.append(counts_tmp)
 
     counts=counts_all.groupby(counts_all.index).sum()
+    f.write('\n')
+    f.write('###   DSSP3 Chains   ###\n')
+    f.write('Average C, H, E: '+str(np.average(C))+' '+ str(np.average(H))+' '+ str(np.average(E)))
+    f.write(counts.to_string())
+    f.write('\n')
     counts.to_pickle(statistics_dir+'/countChains3')
     tmp={'avg3':[np.average(C), np.average(H), np.average(E)]}
     attributes.update(tmp)
 
-def countStructureChains8_dict(dict):
+def countStructureChains8_dict(dict, f):
     def countStructureChains8(sequence):
         H = []
         E = []
@@ -230,7 +247,7 @@ def countStructureChains8_dict(dict):
                                len(np.bincount(none))), 8), dtype=int)
         counts = pd.DataFrame(matrix,
                               columns=['H', 'E', 'I', 'S', 'T', 'G', 'B', '-'],
-                              index=[range(
+                              index=[np.arange(
                                   max(len(np.bincount(H)), len(np.bincount(E)), len(np.bincount(I)),
                                       len(np.bincount(S)), len(np.bincount(T)), len(np.bincount(G)),
                                       len(np.bincount(B)),
@@ -262,9 +279,9 @@ def countStructureChains8_dict(dict):
     B = []
     G = []
     none = []
-    counts_all = pd.DataFrame(np.zeros((0, 8), dtype=int),
+    counts_all = pd.DataFrame(np.zeros((1, 8), dtype=int),
                               columns=[ 'H', 'E', 'I', 'S', 'T', 'G', 'B', '-'],
-                              index=[range(0)])
+                              index=[np.arange(1)])
     for sample in dict.keys():
         counts_tmp, H_tmp, E_tmp, I_tmp, S_tmp, T_tmp, G_tmp, B_tmp, none_tmp = countStructureChains8(dict[sample][1])
         E.extend(E_tmp)
@@ -278,12 +295,18 @@ def countStructureChains8_dict(dict):
         counts_all = counts_all.append(counts_tmp)
 
     counts=counts_all.groupby(counts_all.index).sum()
+    f.write('\n')
+    f.write('###   DSSP8 Chains   ###\n')
+    f.write('Average H, E, I, S, T, G, B, -: '+ str(np.average(H))+' '+ str(np.average(E))+' '+ str(np.average(I))+' '+ str(np.average(S))+' '+
+                                                str(np.average(T))+' '+str(np.average(G))+' '+str(np.average(B))+' '+str(np.average(none))+'\n')
+    f.write(counts.to_string())
+    f.write('\n')
     counts.to_pickle(statistics_dir+'/countChains8')
 
     tmp={'avg8':[np.average(H), np.average(E),np.average(I),np.average(S),np.average(T),np.average(G),np.average(B),np.average(none)]}
     attributes.update(tmp)
 
-def countAminoAcidsPerStruct_dict(dict3, dict8):
+def countAminoAcidsPerStruct_dict(dict3, dict8, f):
     def countAminoAcidsPerStruct8(seq, struct):
         matrix = np.zeros((9, 21), dtype=int)
         aa_counts = pd.DataFrame(matrix,  # # 0:H, 1:E, 2:I, 3:S, 4:T, 5:G, 6:B, 7:-
@@ -384,8 +407,12 @@ def countAminoAcidsPerStruct_dict(dict3, dict8):
         aa_counts_tmp=countAminoAcidsPerStruct3(seq,struct)
         aa_counts=aa_counts.append(aa_counts_tmp)
 
-    counts = np.array([aa_counts.groupby(aa_counts.index).sum()])
-    np.save(statistics_dir + '/countAAs3', counts)
+    counts = aa_counts.groupby(aa_counts.index).sum()
+    f.write('\n')
+    f.write('###   TYPE OF AMINO ACIDS PER STRUCTURE CLASS DSSP3   ###\n')
+    f.write(counts.to_string())
+    f.write('\n')
+    np.save(statistics_dir + '/countAAs3', np.array(counts))
 
     matrix = np.zeros((9, 21), dtype=int)
     aa_counts = pd.DataFrame(matrix,  # 0:C,1:H,2:E,3:XY
@@ -401,11 +428,15 @@ def countAminoAcidsPerStruct_dict(dict3, dict8):
         aa_counts_tmp = countAminoAcidsPerStruct8(seq, struct)
         aa_counts=aa_counts.append(aa_counts_tmp)
 
-    counts=np.array([aa_counts.groupby(aa_counts.index).sum()])
-    np.save(statistics_dir+'/countAAs8',counts)
+    counts=aa_counts.groupby(aa_counts.index).sum()
+    f.write('\n')
+    f.write('###   TYPE OF AMINO ACIDS PER STRUCTURE CLASS DSSP8   ###\n')
+    f.write(counts.to_string())
+    f.write('\n')
+    np.save(statistics_dir+'/countAAs8',np.array(counts))
 
 
-def countDistanceBetweenBetaSheets_dict(dict):
+def countDistanceBetweenBetaSheets_dict(dict, f):
     def countDistanceBetweenBetaSheets(sequence):
         dist = []
         i = 0
@@ -428,17 +459,26 @@ def countDistanceBetweenBetaSheets_dict(dict):
         seq=dict[sample][1]
         dist_tmp=countDistanceBetweenBetaSheets(seq)
         dist=dist+dist_tmp
-    return np.average(dist)
 
+    f.write('\n')
+    f.write('###   AVG DISTANCE BETWEEN BETA SHEETS   ###\n')
+    f.write(str(np.average(dist)))
+    f.write('\n')
 
+f = open('statistics.txt', 'w')
 dict3, lengths3 = getInput(proteins_path, 3)
 dict8, lengths8 = getInput(proteins_path, 8)
+f.write('### LENGTHS ###\n')
+f.write('Lengths of sequences in dataset: (min, max, avg)'+str(np.min(lengths3))+' '+str(np.max(lengths3))+' '+ str(np.average(lengths3))+'\n')
 
-countStructures3(dict3)
-countStructures8(dict8)
-countStructureChains3_dict(dict3)
-countStructureChains8_dict(dict8)
+countStructures3(dict3, f)
+countStructures8(dict8, f)
+countStructureChains3_dict(dict3, f)
+countStructureChains8_dict(dict8, f)
+countAminoAcidsPerStruct_dict(dict3, dict8, f)
+countDistanceBetweenBetaSheets_dict(dict3, f)
+countDistanceBetweenBetaSheets_dict(dict8, f)
 
 np.save(statistics_dir+'/lengths3',np.array(lengths3))
-print(len(attributes))
 np.save(statistics_dir+'/stats_dict', attributes)
+f.close()

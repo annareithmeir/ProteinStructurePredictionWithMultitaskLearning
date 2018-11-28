@@ -1,0 +1,34 @@
+\select@language {english}
+\contentsline {section}{\numberline {1}Introduction}{4}
+\contentsline {subsection}{\numberline {1.1}Protein Secondary Structure Prediction}{4}
+\contentsline {subsection}{\numberline {1.2}ProtVec}{4}
+\contentsline {subsection}{\numberline {1.3}Evolutionary Information}{5}
+\contentsline {section}{\numberline {2}Related Work}{5}
+\contentsline {subsection}{\numberline {2.1}Secondary Structure Prediction with Deep Neural Networks}{5}
+\contentsline {subsection}{\numberline {2.2}Multi-target Prediction And Evolutionary Information}{5}
+\contentsline {section}{\numberline {3}Combining Word Embeddings of Protein Sequences with Evolutionary Information for Secondary Structure Prediction Using Deep Neural networks}{5}
+\contentsline {subsection}{\numberline {3.1}The Dataset}{5}
+\contentsline {subsection}{\numberline {3.2}Data Preprocessing and Input Features}{6}
+\contentsline {subsection}{\numberline {3.3}Neural Network Architecture}{6}
+\contentsline {subsubsection}{\numberline {3.3.1}CNN}{6}
+\contentsline {subsubsection}{\numberline {3.3.2}LSTM}{6}
+\contentsline {section}{\numberline {4}Results}{6}
+\contentsline {subsection}{\numberline {4.1}Code overview}{7}
+\contentsline {subsection}{\numberline {4.2}CNN results}{7}
+\contentsline {subsection}{\numberline {4.3}LSTM results}{7}
+\contentsline {subsection}{\numberline {4.4}DSSP3 and DSSP8 results}{7}
+\contentsline {section}{\numberline {5}Discussion}{7}
+\contentsline {subsection}{\numberline {5.1}Runtime And Memory}{7}
+\contentsline {subsection}{\numberline {5.2}Problems}{7}
+\contentsline {subsection}{\numberline {5.3}Improvement}{7}
+\contentsline {section}{\numberline {6}Outlook}{7}
+\contentsline {section}{\numberline {7}Notes}{7}
+\contentsline {subsection}{\numberline {7.1}Overview of files}{10}
+\contentsline {subsection}{\numberline {7.2}More Notes}{10}
+\contentsline {subsection}{\numberline {7.3}The dataset}{12}
+\contentsline {subsection}{\numberline {7.4}Protein evolution and ProtVec}{13}
+\contentsline {subsection}{\numberline {7.5}My work}{13}
+\contentsline {section}{\numberline {8}TODOs}{14}
+\contentsline {section}{Appendices}{15}
+\contentsline {section}{\numberline {A}Appendix A}{15}
+\contentsline {section}{\numberline {B}Appendix B}{15}

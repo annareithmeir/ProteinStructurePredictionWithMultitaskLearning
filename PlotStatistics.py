@@ -25,7 +25,7 @@ plt.tight_layout()
 #
 # PLOT PIECHARTS
 #
-
+'''
 classcounts8_ordered=[classCounts8[4], classCounts8[3],classCounts8[7],classCounts8[0],classCounts8[2],classCounts8[5],classCounts8[6],classCounts8[1], classCounts8[8]]
 
 plt.pie(classCounts3, labels=['C', 'H', 'E', 'X or Y'], autopct='%1.1f%%',textprops={'fontsize': 25, 'fontweight':'bold'},pctdistance=1.6,colors=['gold', 'yellowgreen', 'lightcoral', 'grey'], shadow=False, startangle=90, explode=[0,0,0,0.1])
@@ -33,26 +33,25 @@ plt.savefig(plot_path+'/piechart_3classes.pdf')
 plt.clf()
 plt.pie(classcounts8_ordered, labels=['T','S','-','H','I','G','B','E','X or Y'], autopct='%1.1f%%',textprops={'fontsize': 25, 'fontweight':'bold'},pctdistance=1.6,colors=['gold', 'orange', 'yellow', 'yellowgreen','palegreen', 'forestgreen','lightcoral','firebrick','grey'], shadow=False, explode=[0,0,0,0,0,0,0,0,0.1],startangle=90)
 plt.savefig(plot_path+'/piechart_8classes.pdf')
-'''
+
 #
 # PLOT LENGTHS
 #
 lengthCounts3=np.load(plot_path+'/lengths3.npy')
-print(lengthCounts3)
-print(np.bincount(lengthCounts3))
+print('---->',np.average(lengthCounts3))
 
 sns.set_context('talk')
 plt.clf()
 dist3plot=sns.distplot(lengthCounts3, kde=False)
 plt.title('Occurences of sequence lengths in data set')
-dist3plot.set(xlabel='Occurences')
-dist3plot.set(ylabel='sequence length')
+dist3plot.set(xlabel='Sequence length')
+dist3plot.set(ylabel='Occurences')
 #dist3plot.set(xlim=[0, 1200])
 plt.axvline(np.average(lengthCounts3),linestyle='dashed')
 fig=dist3plot.get_figure()
 plt.tight_layout()
 fig.savefig(plot_path+'/lengths.pdf')
-
+'''
 
 #
 # PLOT CHAIN LENGTHS 3
@@ -74,9 +73,9 @@ second.set(xticklabels=[10,20,30,40,50])
 third.set(xticks=[10,20,30,40,50])
 third.set(xticklabels=[10,20,30,40,50])
 
-first.set(xlabel='C')
-second.set(xlabel='H')
-third.set(xlabel='E')
+first.set(xlabel=' Chain length C')
+second.set(xlabel='Chain length H')
+third.set(xlabel='Chain length E')
 first.set(ylabel='Occurences')
 second.set(ylabel=' ')
 third.set(ylabel=' ')
@@ -84,7 +83,7 @@ third.set(ylabel=' ')
 
 plt.savefig(plot_path+'/chains3.pdf')
 
-
+'''
 
 #
 # PLOT CHAIN LENGTHS 8

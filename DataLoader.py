@@ -6,41 +6,44 @@ import torch.utils.data as data
 import torchvision.transforms as transforms
 import utilities_MICHAEL as utilities
 
-
+#
+# This method calculates the proportions of each class --> to ensure that all classes are present in splitted sets
+#
 def countStructures3(train, test):
     def countStructs(dict):
         c = 0
         h = 0
         e = 0
-        xy = 0
         for sample in dict.keys():
             sequence = dict[sample][1]
+            mask=dict[sample][2]
             for res in range(len(sequence)):
-                if (sequence[res] == 1):
+                if (sequence[res] == 0 and mask[res]!=0):
                     c += 1
-                elif (sequence[res] == 2):
+                elif (sequence[res] == 1 and mask[res]!=0):
                     h += 1
-                elif (sequence[res] == 3):
+                elif (sequence[res] == 2 and mask[res]!=0):
                     e += 1
-                elif (sequence[res] == 4):
-                    xy += 1
+                elif (mask[res]==0):
+                    pass
                 else:
                     raise ValueError('Unknown structure', sequence[res])
 
-        return c, h, e, xy
+        return c, h, e
 
     # check if classes occur around same times in train and test set
-    ctrain, htrain, etrain, xytrain = countStructures3(train)
-    trainsum = ctrain + htrain + etrain + xytrain
-    ctest, htest, etest, xytest = countStructures3(test)
-    testsum = ctest + htest + etest + xytest
-    print('training structure ratio:', ctrain / float(trainsum), htrain / float(trainsum), etrain / float(trainsum),
-          xytrain / float(trainsum))
-    print('occurences train:', ctrain, htrain, etrain, xytrain, '-->', trainsum)
-    print('testing structure ratio:', ctest / float(testsum), htest / float(testsum), etest / float(testsum),
-          xytest / float(testsum))
-    print('occurences test:', ctest, htest, etest, xytest, '-->', testsum)
+    ctrain, htrain, etrain = countStructs(train)
+    trainsum = ctrain + htrain + etrain
+    ctest, htest, etest = countStructs(test)
+    testsum = ctest + htest + etest
+    print('training structure ratio %:', round(ctrain / float(trainsum)*100,2), round(htrain / float(trainsum)*100,2), round(etrain / float(trainsum)*100,2))
+    #print('occurences train:', ctrain, htrain, etrain, '-->', trainsum)
+    print('testing structure ratio %:', round(ctest / float(testsum)*100,2), round(htest / float(testsum)*100,2), round(etest / float(testsum)*100,2))
+    #print('occurences test:', ctest, htest, etest, '-->', testsum)
 
+#
+# Splits data into training and testing set
+#
 class Data_splitter():
     def __init__(self, inputs, targets, masks, test_ratio=0.2):  # 80% train, 20% test
         self.inputs = inputs
@@ -55,7 +58,8 @@ class Data_splitter():
         cnt_test = 0
         cnt_train = 0
         np.random.seed(42)  # to reproduce splits
-        for i in range(len(self.inputs)):
+        proteins=self.inputs.keys()
+        for i in proteins:
             rnd = np.random.rand()
 
             if (len(self.targets[i]) > self.max_len):
@@ -69,12 +73,18 @@ class Data_splitter():
 
         print('Size of training set: {}'.format(len(train)))
         print('Size of test set: {}'.format(len(test)))
+        countStructures3(train, test)
 
         return train, test
 
     def get_max_length(self):
         return self.max_len
 
+
+#
+# Custom dataset class, returns (ProtVec/1hot, target, weighted mask) for one sample.
+# Each sample is padded with zeros and has length 968
+#
 class Dataset(data.Dataset):
 
     def __init__(self, samples, weights, max_len=None):
@@ -131,6 +141,10 @@ class Dataset(data.Dataset):
     def __len__(self):
         return self.data_len
 
+
+#
+# Returns train set and test set
+#
 def train_test_split(inputs, targets, masks, weights):
     d = Data_splitter(inputs, targets, masks)
     train, test = d.split_data()
@@ -140,6 +154,9 @@ def train_test_split(inputs, targets, masks, weights):
 
     return train_set, test_set
 
+#
+# Creates TestLoader and TrainLoader of specified batchsizes
+#
 def createDataLoaders(train_set, test_set, batch_size_train, batch_size_test):
     data_loaders = dict()
     data_loaders['Train'] = torch.utils.data.DataLoader(dataset=train_set,

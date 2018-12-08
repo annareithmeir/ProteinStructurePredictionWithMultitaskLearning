@@ -17,7 +17,7 @@
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="InputsGeneral_ProtVec.svg"
-   inkscape:export-filename="/home/anna/Dokumente/Bachelorarbeit/images/buildingProtVecs3.png"
+   inkscape:export-filename="/home/anna/Dokumente/Bachelorarbeit/images/buildingProtVecs2.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -103,8 +103,8 @@
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="316.00825"
-     inkscape:cy="362.10526"
+     inkscape:cx="80.00825"
+     inkscape:cy="360.10526"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -255,7 +255,7 @@
     </g>
     <g
        id="g4451"
-       transform="translate(-115,63)">
+       transform="translate(-113,31)">
       <rect
          y="460.36218"
          x="247"
@@ -698,8 +698,8 @@
        id="rect4504-2"
        width="30.669529"
        height="509.66949"
-       x="545.02747"
-       y="-928.83472"
+       x="520.02747"
+       y="-929.83472"
        transform="matrix(0,1,-1,0,0,0)" />
     <flowRoot
        xml:space="preserve"
@@ -715,9 +715,9 @@
            style="font-size:25px" /></flowRegion><flowPara
          id="flowPara4461-2"><flowSpan
    style="fill:#aa0000"
-   id="flowSpan13089">0.000 0.000 0.000     ...      0.000 0.000</flowSpan> 0.367 0.112 2.453     ...      4.767 2.006</flowPara><flowPara
-         id="flowPara4463-0">7.899 0.902 5.232     ...      1.113 0.900</flowPara><flowPara
-         id="flowPara4486-6">2.222 5.456 0.004     ...      2.780 0.714</flowPara><flowPara
+   id="flowSpan13089">0.000 0.000 0.000     ...      0.000 0.000</flowSpan> 0.367 0.112 0.453     ...      0.767 0.006</flowPara><flowPara
+         id="flowPara4463-0">0.899 0.902 0.232     ...      0.113 0.900</flowPara><flowPara
+         id="flowPara4486-6">0.222 0.456 0.004     ...      0.780 0.714</flowPara><flowPara
          id="flowPara4781" /><flowPara
          id="flowPara4783" /><flowPara
          id="flowPara4785" /><flowPara
@@ -727,7 +727,7 @@
          id="flowPara4496-6" /><flowPara
          id="flowPara4498-6" /><flowPara
          id="flowPara4500-4" /><flowPara
-         id="flowPara4502-9">0.456 9.899 2.003      ...     2.223 6.545</flowPara><flowPara
+         id="flowPara4502-9">0.456 0.899 0.003      ...     0.223 0.545</flowPara><flowPara
          id="flowPara5994-5"
          style="fill:#aa0000">0.000 0.000 0.000      ...     0.000 0.000</flowPara></flowRoot>    <text
        xml:space="preserve"
@@ -805,7 +805,7 @@
          sodipodi:role="line"
          id="tspan4775"
          x="696"
-         y="702.36218"></tspan><tspan
+         y="702.36218" /><tspan
          sodipodi:role="line"
          x="696"
          y="752.36218"

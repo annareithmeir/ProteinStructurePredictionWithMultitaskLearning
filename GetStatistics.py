@@ -7,29 +7,32 @@ import os
 
 proteins_path='../mheinzinger/contact_prediction_v2/targets/dssp'
 seq_path='../mheinzinger/contact_prediction_v2/sequences'
+anna_path='preprocessing'
 statistics_dir='stats'
 
 attributes={}
 
-def readResidues(protein):
-    path=seq_path+'/'+protein.upper()+'.fasta.txt'
+def readResidues(path):
     if(os.path.isfile(path)):
-        residues_input = np.loadtxt(path, dtype=str)
+        f = open(path, 'r')
+        residues_input = f.read().splitlines()
+        f.close()
         residues=''
         for i in range(len(residues_input)):
             if(i>0):
                 if(residues_input[i][0]=='>'):
                     break
                 residues += residues_input[i]
-
         return residues
     else:
         print('no residue')
 
 def readStructures3(protein):
-    path= proteins_path+'/'+protein+'/'+protein+'.3.consensus.dssp'
+    path = proteins_path + '/'+protein.lower() + '/' + protein.lower() + '.3.consensus.dssp'
     if(os.path.isfile(path)):
-        structures_input = np.loadtxt(path, dtype=str)
+        f = open(path, 'r')
+        structures_input = f.read().splitlines()
+        f.close()
         structures=''
         for i in range(len(structures_input)):
             if(i>0):
@@ -39,9 +42,11 @@ def readStructures3(protein):
         print('no 3 file of', protein)
 
 def readStructures8(protein):
-    path = proteins_path+'/'+protein+'/'+protein+'.8.consensus.dssp'
+    path = proteins_path + '/'+ protein.lower() + '/' + protein.lower() + '.8.consensus.dssp'
     if(os.path.isfile(path)):
-        structures_input = np.loadtxt(path, dtype=str)
+        f = open(path, 'r')
+        structures_input = f.read().splitlines()
+        f.close()
         structures = ''
         for i in range(len(structures_input)):
             if (i > 0):
@@ -50,16 +55,17 @@ def readStructures8(protein):
     else:
         print('no 8 file of ', protein)
 
-def getInput(folder, classification_mode): #proteins in a folder named root+proteins/
+def getInput(classification_mode): #proteins in a folder named root+proteins/
     dict={}
     lengths=[]
-    for prot in os.listdir(folder):
-        res=readResidues(prot)
+    for prot in os.listdir(anna_path):
+        print(prot)
+        res=readResidues(seq_path+'/'+prot.upper()+'.fasta.txt')
         lengths.append(len(res))
         if(classification_mode==3):
-            str=readStructures3(prot)
+            str=readStructures3(prot.lower())
         elif(classification_mode==8):
-            str=readStructures8(prot)
+            str=readStructures8(prot.lower())
         else:
             raise ValueError('[ERROR] Either 3 or 8 classes')
         if(str!=None and res!=None):
@@ -128,7 +134,7 @@ def countStructures8(dict, f):
                 xy += 1
             else:
                 print('unknown found:', sequence[i])
-                return 0,0,0,0,0,0,0,0,0
+                return 0,0,0,0,0,0,0,0,0   #TODO: check if this is correct!
 
     f.write('\n')
     f.write('###   DSSP8 Classes   ###\n')
@@ -154,7 +160,7 @@ def countStructureChains3_dict(dict, f):
                 while (sequence[i + 1] == tmp):
                     cnt += 1
                     i = i + 1
-                    if (i == len(sequence) - 1):
+                    if (i == (len(sequence) - 1)):
                         break
             if (tmp == 'C'):
                 C.insert(0, cnt)
@@ -466,13 +472,16 @@ def countDistanceBetweenBetaSheets_dict(dict, f):
     f.write('\n')
 
 f = open('statistics.txt', 'w')
-dict3, lengths3 = getInput(proteins_path, 3)
-dict8, lengths8 = getInput(proteins_path, 8)
+dict3, lengths3 = getInput(3)
+dict8, lengths8 = getInput(8)
+print(len(dict3))
+print(len(dict8))
 f.write('### LENGTHS ###\n')
 f.write('Lengths of sequences in dataset: (min, max, avg)'+str(np.min(lengths3))+' '+str(np.max(lengths3))+' '+ str(np.average(lengths3))+'\n')
 
 countStructures3(dict3, f)
 countStructures8(dict8, f)
+
 countStructureChains3_dict(dict3, f)
 countStructureChains8_dict(dict8, f)
 countAminoAcidsPerStruct_dict(dict3, dict8, f)
@@ -481,4 +490,5 @@ countDistanceBetweenBetaSheets_dict(dict8, f)
 
 np.save(statistics_dir+'/lengths3',np.array(lengths3))
 np.save(statistics_dir+'/stats_dict', attributes)
+
 f.close()

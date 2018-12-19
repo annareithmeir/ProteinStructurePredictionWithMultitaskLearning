@@ -5,12 +5,12 @@ plt.switch_backend('agg')
 import pandas as pd
 import os
 from matplotlib import rcParams
-rcParams.update({'figure.autolayout': True})
+#rcParams.update({'figure.autolayout': True})
 
 plot_path='stats'
 sns.set(style="white", palette="muted", color_codes=True)
 sns.set_style('ticks')
-sns.set_context('talk') #'paper'
+sns.set_context('paper') #'paper'
 sns.despine()
 
 dict=np.load(plot_path+'/stats_dict.npy').item() #avg3, avg8
@@ -19,26 +19,25 @@ classCounts3=np.load(plot_path+'/countClasses_3.npy')
 classCounts8=np.load(plot_path+'/countClasses_8.npy')
 # array [c,h,e,xy] of occurences
 
-plt.figure(figsize=(20,10))
-plt.tight_layout()
+plt.figure()
 
 #
 # PLOT PIECHARTS
 #
-'''
+
 classcounts8_ordered=[classCounts8[4], classCounts8[3],classCounts8[7],classCounts8[0],classCounts8[2],classCounts8[5],classCounts8[6],classCounts8[1], classCounts8[8]]
 
-plt.pie(classCounts3, labels=['C', 'H', 'E', 'X or Y'], autopct='%1.1f%%',textprops={'fontsize': 25, 'fontweight':'bold'},pctdistance=1.6,colors=['gold', 'yellowgreen', 'lightcoral', 'grey'], shadow=False, startangle=90, explode=[0,0,0,0.1])
+plt.pie(classCounts3, labels=['C', 'H', 'E', 'X or Y'], autopct='%1.1f%%',pctdistance=1.4,colors=['gold', 'yellowgreen', 'lightcoral', 'grey'], shadow=False, startangle=90, explode=[0,0,0,0.1])
 plt.savefig(plot_path+'/piechart_3classes.pdf')
 plt.clf()
-plt.pie(classcounts8_ordered, labels=['T','S','-','H','I','G','B','E','X or Y'], autopct='%1.1f%%',textprops={'fontsize': 25, 'fontweight':'bold'},pctdistance=1.6,colors=['gold', 'orange', 'yellow', 'yellowgreen','palegreen', 'forestgreen','lightcoral','firebrick','grey'], shadow=False, explode=[0,0,0,0,0,0,0,0,0.1],startangle=90)
+plt.pie(classcounts8_ordered, labels=['T','S','-','H','I','G','B','E','X or Y'], autopct='%1.1f%%',pctdistance=1.4,colors=['gold', 'orange', 'yellow', 'yellowgreen','palegreen', 'forestgreen','lightcoral','firebrick','grey'], shadow=False, explode=[0,0,0,0,0,0,0,0,0.1],startangle=90)
 plt.savefig(plot_path+'/piechart_8classes.pdf')
 
 #
 # PLOT LENGTHS
 #
 lengthCounts3=np.load(plot_path+'/lengths3.npy')
-print('---->',np.average(lengthCounts3))
+print('AVERAGE LENGTH---->',np.average(lengthCounts3))
 
 sns.set_context('talk')
 plt.clf()
@@ -51,7 +50,7 @@ plt.axvline(np.average(lengthCounts3),linestyle='dashed')
 fig=dist3plot.get_figure()
 plt.tight_layout()
 fig.savefig(plot_path+'/lengths.pdf')
-'''
+
 
 #
 # PLOT CHAIN LENGTHS 3
@@ -82,8 +81,6 @@ third.set(ylabel=' ')
 
 
 plt.savefig(plot_path+'/chains3.pdf')
-
-'''
 
 #
 # PLOT CHAIN LENGTHS 8
@@ -204,4 +201,69 @@ def together():
 
 #countAAs3=np.load(plot_path+'/countAAs3.npy')
 #countAAs8=np.load(plot_path+'/countAAs8.npy')
-'''
+
+
+solvAcc_avgs=np.load(plot_path+'/solvAcc_avgs.npy')
+solvAcc_quarters=np.load(plot_path+'/solvAcc_quarters.npy')
+solvAcc_halfs=np.load(plot_path+'/solvAcc_halfs.npy')
+print(solvAcc_halfs)
+
+sns.set_context('paper')
+plt.clf()
+solvAccAvgsPlot=sns.distplot(solvAcc_avgs, kde=False)
+plt.title('Averages of Solvent Accessibilities per sequence')
+solvAccAvgsPlot.set(xlabel='Average')
+solvAccAvgsPlot.set(ylabel='Occurences')
+#dist3plot.set(xlim=[0, 1200])
+plt.axvline(np.average(solvAcc_avgs),linestyle='dashed')
+fig=solvAccAvgsPlot.get_figure()
+plt.tight_layout()
+fig.savefig(plot_path+'/solvAcc_avgs.pdf')
+
+sns.set_context('paper')
+plt.clf()
+solvAccQuartersPlot=sns.barplot(np.arange(4),solvAcc_quarters)
+plt.title('Quarters of solv Acc occurences')
+solvAccQuartersPlot.set(xlabel='Quarter')
+solvAccQuartersPlot.set(ylabel='Occurences')
+fig=solvAccQuartersPlot.get_figure()
+plt.tight_layout()
+fig.savefig(plot_path+'/solvAcc_quarters.pdf')
+
+sns.set_context('paper')
+plt.clf()
+df=pd.DataFrame({'state': ['Buried', 'Exposed'], 'occs': [solvAcc_halfs[0], solvAcc_halfs[1]]})
+sum=solvAcc_halfs[0]+solvAcc_halfs[1]
+solvAccHalfsPlot=sns.barplot(x='state',y='occs', data=df)
+plt.title('Buried or Exposed Occurences - Buried: '+str(solvAcc_halfs[0]/float(sum))+' Exposed: '+str(solvAcc_halfs[1]/float(sum)))
+solvAccHalfsPlot.set(xlabel='Buried or exposed')
+solvAccHalfsPlot.set(ylabel='Occurences')
+fig=solvAccHalfsPlot.get_figure()
+plt.tight_layout()
+fig.savefig(plot_path+'/solvAcc_halfs.pdf')
+
+
+flex_avgs=np.load(plot_path+'/flex_avgs.npy')
+flex_thirds=np.load(plot_path+'/flex_thirds.npy')
+
+sns.set_context('paper')
+plt.clf()
+flexAvgsPlot=sns.distplot(flex_avgs, kde=False)
+plt.title('Averages of flex per sequence')
+flexAvgsPlot.set(xlabel='Average')
+flexAvgsPlot.set(ylabel='Occurences')
+#dist3plot.set(xlim=[0, 1200])
+plt.axvline(np.average(flex_avgs),linestyle='dashed')
+fig=flexAvgsPlot.get_figure()
+plt.tight_layout()
+fig.savefig(plot_path+'/flex_avgs.pdf')
+
+sns.set_context('paper')
+plt.clf()
+flexQuartersPlot=sns.barplot(np.arange(3),flex_thirds)
+plt.title('Quarters of flex occurences')
+flexQuartersPlot.set(xlabel='third')
+flexQuartersPlot.set(ylabel='Occurences')
+fig=flexQuartersPlot.get_figure()
+plt.tight_layout()
+fig.savefig(plot_path+'/flex_thirds.pdf')

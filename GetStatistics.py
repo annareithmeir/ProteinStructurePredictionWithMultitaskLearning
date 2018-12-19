@@ -8,6 +8,7 @@ import os
 proteins_path='../mheinzinger/contact_prediction_v2/targets/dssp'
 seq_path='../mheinzinger/contact_prediction_v2/sequences'
 anna_path='preprocessing'
+targets_path='/home/mheinzinger/contact_prediction_v2/targets'
 statistics_dir='stats'
 
 attributes={}
@@ -58,19 +59,30 @@ def readStructures8(protein):
 def getInput(classification_mode): #proteins in a folder named root+proteins/
     dict={}
     lengths=[]
+    i=0
     for prot in os.listdir(anna_path):
-        print(prot)
-        res=readResidues(seq_path+'/'+prot.upper()+'.fasta.txt')
-        lengths.append(len(res))
-        if(classification_mode==3):
-            str=readStructures3(prot.lower())
-        elif(classification_mode==8):
-            str=readStructures8(prot.lower())
-        else:
-            raise ValueError('[ERROR] Either 3 or 8 classes')
-        if(str!=None and res!=None):
-            tmp = {prot: (res, str)}
-            dict.update(tmp)
+        if (len(os.listdir('preprocessing/' + prot)) == 7 and os.path.isfile(targets_path + '/bdb_bvals/' + prot.lower() + '.bdb.memmap')):
+            i+=1
+            print(prot)
+            res=readResidues(seq_path+'/'+prot.upper()+'.fasta.txt')
+            lengths.append(len(res))
+            if(classification_mode==3):
+                str=readStructures3(prot.lower())
+            elif(classification_mode==8):
+                str=readStructures8(prot.lower())
+            else:
+                raise ValueError('[ERROR] Either 3 or 8 classes')
+
+            solvAcc=np.memmap(targets_path + '/dssp/' + prot.lower() + '/' + prot.lower() + '.rel_asa.memmap',
+                            dtype=np.float32, mode='r', shape=len(res))
+            solvAcc=np.nan_to_num(solvAcc)
+
+            flex=np.memmap(targets_path + '/bdb_bvals/' + prot.lower() + '.bdb.memmap', dtype=np.float32, mode='r', shape=len(res))
+            flex=np.nan_to_num(flex)
+            if(str!=None and res!=None and solvAcc!=None and flex!=None):
+                tmp = {prot: (res, str, solvAcc, flex)}
+                dict.update(tmp)
+    print('TOTAL PROTEIN NUMBER:', i)
     return dict, lengths
 
 def countStructures3(dict, f):
@@ -471,11 +483,67 @@ def countDistanceBetweenBetaSheets_dict(dict, f):
     f.write(str(np.average(dist)))
     f.write('\n')
 
+def analyseFlex(dict):
+    flex_avgs=[]
+    three_bins=[0,0,0]
+    for sample in dict.keys():
+        flex=dict[sample][3]
+        flex_avgs.append(np.average(flex))
+
+        for f in flex:
+            if(f<=-1):
+                three_bins[0]+=1
+            elif (f > -1 and f< 1):
+                three_bins[1] += 1
+            elif (f >= 1):
+                three_bins[2] += 1
+
+    flex_avgs=np.array(flex_avgs)
+    three_bins=np.array(three_bins)
+    np.save(statistics_dir+'/flex_avgs', flex_avgs)
+    np.save(statistics_dir+'/flex_thirds', three_bins)
+    tmp={'flex': three_bins}
+    attributes.update(tmp)
+
+def analyseSolvAcc(dict):
+    solv_avgs = []
+    four_bins = [0, 0, 0, 0]
+    two_bins=[0,0]
+    for sample in dict.keys():
+        solv=dict[sample][2]
+        solv_avgs.append(np.average(solv))
+
+        for f in solv:
+            if (f >= 0 and f < 0.25):
+                four_bins[0] += 1
+                two_bins[0] += 1
+            elif (f >= 0.25 and f < 0.5):
+                four_bins[1] += 1
+                two_bins[0] += 1
+            elif (f >= 0.5 and f < 0.75):
+                four_bins[2] += 1
+                two_bins[1] += 1
+            elif (f >= 0.75 and f <= 1.0):
+                four_bins[3] += 1
+                two_bins[1] += 1
+
+    solv_avgs = np.array(solv_avgs)
+    four_bins = np.array(four_bins)
+    two_bins = np.array(two_bins)
+    np.save(statistics_dir + '/solvAcc_avgs', solv_avgs)
+    np.save(statistics_dir + '/solvAcc_quarters', four_bins)
+    np.save(statistics_dir + '/solvAcc_halfs', two_bins)
+
+    tmp={'solvacc': two_bins}
+    attributes.update(tmp)
+
+
 f = open('statistics.txt', 'w')
 dict3, lengths3 = getInput(3)
 dict8, lengths8 = getInput(8)
 print(len(dict3))
 print(len(dict8))
+
 f.write('### LENGTHS ###\n')
 f.write('Lengths of sequences in dataset: (min, max, avg)'+str(np.min(lengths3))+' '+str(np.max(lengths3))+' '+ str(np.average(lengths3))+'\n')
 
@@ -487,6 +555,9 @@ countStructureChains8_dict(dict8, f)
 countAminoAcidsPerStruct_dict(dict3, dict8, f)
 countDistanceBetweenBetaSheets_dict(dict3, f)
 countDistanceBetweenBetaSheets_dict(dict8, f)
+
+analyseFlex(dict3)
+analyseSolvAcc(dict3)
 
 np.save(statistics_dir+'/lengths3',np.array(lengths3))
 np.save(statistics_dir+'/stats_dict', attributes)

@@ -1,0 +1,4 @@
+LEARNING RATE: 0.0001
+DSSP MODE :3
+NUMBER OF PARAMETERS IN MODEL :4185
+Epoch | Train Loss, Test Loss | Train Accuracy, Test Accuracy

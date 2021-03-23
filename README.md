@@ -1,6 +1,7 @@
 # Combining Word Embeddings Of Protein Sequences With Evolutionary Information For Secondary Structure Prediction Using Deep Neural Networks
 
-Abstract: The identification of the three-dimensional structure of a protein is fundamental since 
+##### Abstract: 
+The identification of the three-dimensional structure of a protein is fundamental since 
 it determines the protein’s function. In bioinformatics, neural networks have proven
 to be useful for the prediction of the secondary structure from the linear amino acid
 sequence. Here, evolutionary information of the protein is crucial, which is given by
@@ -29,6 +30,6 @@ input. Finally, the results show that the learning of additional structural feat
 possible without a significant loss of performance.
 
 ![Screenshot](images/modeloverview_specific.png)
-![Screenshot](images/InputsGeneral_ProtVec.svg.png)
+
 ![Screenshot](images/codeOverview.png)
 

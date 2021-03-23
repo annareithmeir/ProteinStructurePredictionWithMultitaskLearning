@@ -28,4 +28,7 @@ the position-specific scoring matrix and the ProtVec encoded MSA were used as th
 input. Finally, the results show that the learning of additional structural features is
 possible without a significant loss of performance.
 
-![Screenshot](images/modeloverview.png)
+![Screenshot](images/modeloverview_specific.png)
+![Screenshot](images/InputsGeneral_ProtVec.svg.png)
+![Screenshot](images/codeOverview.png)
+
